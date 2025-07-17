@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการข้อมูลครู - โรงเรียนxxx</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #e0f2fe 0%, #fce4ec 100%); }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .btn-primary { 
+            background: linear-gradient(135deg, #81d4fa 0%, #f8bbd9 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .input-focus:focus {
+            border-color: #81d4fa;
+            box-shadow: 0 0 0 3px rgba(129, 212, 250, 0.1);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">ระบบจัดการข้อมูลครู</h1>
+            <p class="text-xl text-gray-600">โรงเรียนxxx</p>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="ค้นหาชื่อครู..." 
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                </div>
+                <div class="flex-1">
+                    <select id="subjectFilter" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        <option value="">ทุกกลุ่มสาระ</option>
+                        <option value="ภาษาไทย">ภาษาไทย</option>
+                        <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                        <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                        <option value="สังคมศึกษาฯ">สังคมศึกษาฯ</option>
+                        <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                        <option value="ศิลปะ">ศิลปะ</option>
+                        <option value="การงานอาชีพ">การงานอาชีพ</option>
+                        <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                    </select>
+                </div>
+                <button onclick="showAddForm()" class="btn-primary text-white px-8 py-3 rounded-xl font-medium">
+                    + เพิ่มข้อมูลครู
+                </button>
+            </div>
+        </div>
+
+        <!-- Teachers List -->
+        <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">รายการข้อมูลครู</h2>
+            <div id="teachersList" class="space-y-4">
+                <!-- Teachers will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Add/Edit Form Modal -->
+        <div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-2xl card-shadow p-8 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="formTitle" class="text-2xl font-semibold text-gray-800">เพิ่มข้อมูลครู</h3>
+                    <button onclick="closeForm()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+                
+                <form id="teacherForm" class="space-y-6">
+                    <input type="hidden" id="editId" value="">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">ชื่อ-นามสกุล (ไทย) *</label>
+                            <input type="text" id="thaiName" required 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">ชื่อ-นามสกุล (อังกฤษ) *</label>
+                            <input type="text" id="englishName" required 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">อีเมล *</label>
+                            <input type="email" id="email" required 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">เบอร์โทรศัพท์ *</label>
+                            <input type="tel" id="phone" required 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">ชื่อโรงเรียน</label>
+                            <input type="text" id="schoolName" value="โรงเรียนxxxx" readonly 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">กลุ่มสาระฯ *</label>
+                            <select id="subjectGroup" required 
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                                <option value="">เลือกกลุ่มสาระ</option>
+                                <option value="ภาษาไทย">ภาษาไทย</option>
+                                <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                                <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                                <option value="สังคมศึกษาฯ">สังคมศึกษาฯ</option>
+                                <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                                <option value="ศิลปะ">ศิลปะ</option>
+                                <option value="การงานอาชีพ">การงานอาชีพ</option>
+                                <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 pt-6">
+                        <button type="submit" class="btn-primary text-white px-8 py-3 rounded-xl font-medium flex-1">
+                            บันทึกข้อมูล
+                        </button>
+                        <button type="button" onclick="closeForm()" 
+                                class="bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-medium flex-1 hover:bg-gray-300">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center py-8">
+            <p class="text-gray-600">Developed by Yongyuth Jantima</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const SCRIPT_URL = 'https://script.google.com/macros/s/xxxxxxxx/exec';
+        const SHEET_ID = 'xxxxxxxxx';
+        
+        let teachers = [];
+        let editingId = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTeachers();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', filterTeachers);
+            document.getElementById('subjectFilter').addEventListener('change', filterTeachers);
+            document.getElementById('teacherForm').addEventListener('submit', saveTeacher);
+        }
+
+        // Load teachers from Google Sheets
+        async function loadTeachers() {
+            try {
+                Swal.fire({
+                    title: 'กำลังโหลดข้อมูล...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const response = await fetch(`${SCRIPT_URL}?action=read&sheetId=${SHEET_ID}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    teachers = data.data || [];
+                    displayTeachers(teachers);
+                    Swal.close();
+                } else {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading teachers:', error);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลได้', 'error');
+                teachers = [];
+                displayTeachers(teachers);
+            }
+        }
+
+        // Display teachers list
+        function displayTeachers(teacherList) {
+            const container = document.getElementById('teachersList');
+            
+            if (teacherList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="text-6xl mb-4">👨‍🏫</div>
+                        <p class="text-xl">ยังไม่มีข้อมูลครู</p>
+                        <p>คลิก "เพิ่มข้อมูลครู" เพื่อเริ่มต้น</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = teacherList.map((teacher, index) => `
+                <div class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">${teacher.thaiName}</h3>
+                                    <p class="text-gray-600">${teacher.englishName}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">📧 ${teacher.email}</p>
+                                    <p class="text-sm text-gray-600">📱 ${teacher.phone}</p>
+                                </div>
+                                <div>
+                                    <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                        ${teacher.subjectGroup}
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    ${teacher.schoolName}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editTeacher(${index})" 
+                                    class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors">
+                                แก้ไข
+                            </button>
+                            <button onclick="deleteTeacher(${index})" 
+                                    class="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors">
+                                ลบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter teachers
+        function filterTeachers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const subjectFilter = document.getElementById('subjectFilter').value;
+            
+            let filtered = teachers.filter(teacher => {
+                const matchesSearch = teacher.thaiName.toLowerCase().includes(searchTerm) ||
+                                    teacher.englishName.toLowerCase().includes(searchTerm);
+                const matchesSubject = !subjectFilter || teacher.subjectGroup === subjectFilter;
+                
+                return matchesSearch && matchesSubject;
+            });
+            
+            displayTeachers(filtered);
+        }
+
+        // Show add form
+        function showAddForm() {
+            editingId = null;
+            document.getElementById('formTitle').textContent = 'เพิ่มข้อมูลครู';
+            document.getElementById('teacherForm').reset();
+            document.getElementById('schoolName').value = 'โรงเรียนxxxx';
+            document.getElementById('formModal').classList.remove('hidden');
+            document.getElementById('formModal').classList.add('flex');
+        }
+
+        // Edit teacher
+        function editTeacher(index) {
+            const teacher = teachers[index];
+            editingId = index;
+            
+            document.getElementById('formTitle').textContent = 'แก้ไขข้อมูลครู';
+            document.getElementById('thaiName').value = teacher.thaiName;
+            document.getElementById('englishName').value = teacher.englishName;
+            document.getElementById('email').value = teacher.email;
+            document.getElementById('phone').value = teacher.phone;
+            document.getElementById('schoolName').value = teacher.schoolName;
+            document.getElementById('subjectGroup').value = teacher.subjectGroup;
+            
+            document.getElementById('formModal').classList.remove('hidden');
+            document.getElementById('formModal').classList.add('flex');
+        }
+
+        // Close form
+        function closeForm() {
+            document.getElementById('formModal').classList.add('hidden');
+            document.getElementById('formModal').classList.remove('flex');
+            document.getElementById('teacherForm').reset();
+            editingId = null;
+        }
+
+        // Save teacher
+        async function saveTeacher(e) {
+            e.preventDefault();
+            
+            const formData = {
+                thaiName: document.getElementById('thaiName').value,
+                englishName: document.getElementById('englishName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                schoolName: document.getElementById('schoolName').value,
+                subjectGroup: document.getElementById('subjectGroup').value
+            };
+
+            try {
+                Swal.fire({
+                    title: 'กำลังบันทึกข้อมูล...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const action = editingId !== null ? 'update' : 'create';
+                const requestData = {
+                    action: action,
+                    sheetId: SHEET_ID,
+                    data: formData
+                };
+
+                if (editingId !== null) {
+                    requestData.row = editingId + 2; // +2 because of header row and 0-based index
+                }
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (editingId !== null) {
+                        teachers[editingId] = formData;
+                    } else {
+                        teachers.push(formData);
+                    }
+                    
+                    displayTeachers(teachers);
+                    closeForm();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ!',
+                        text: editingId !== null ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'เพิ่มข้อมูลครูเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(result.error || 'Failed to save data');
+                }
+            } catch (error) {
+                console.error('Error saving teacher:', error);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+            }
+        }
+
+        // Delete teacher
+        async function deleteTeacher(index) {
+            const teacher = teachers[index];
+            
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: `คุณต้องการลบข้อมูลของ ${teacher.thaiName} หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    Swal.fire({
+                        title: 'กำลังลบข้อมูล...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            sheetId: SHEET_ID,
+                            row: index + 2 // +2 because of header row and 0-based index
+                        })
+                    });
+
+                    const deleteResult = await response.json();
+
+                    if (deleteResult.success) {
+                        teachers.splice(index, 1);
+                        displayTeachers(teachers);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ลบสำเร็จ!',
+                            text: 'ลบข้อมูลครูเรียบร้อยแล้ว',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error(deleteResult.error || 'Failed to delete data');
+                    }
+                } catch (error) {
+                    console.error('Error deleting teacher:', error);
+                    Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบข้อมูลได้', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
